@@ -28,8 +28,8 @@ dt <- data.frame(lon = c(-30, -30, 30, 30), lat = c(50, 80, 80, 50))
 #
 # Plot your first map
 #
-basemap(data = dt # Use the data.frame we just create
-        , bathymetry = TRUE) + # Set 'bathymetry = TRUE' to add the bathymetry to your map
+basemap(data = dt, # Use the data.frame we just create
+        bathymetry = TRUE) + # Set 'bathymetry = TRUE' to add the bathymetry to your map
   geom_polygon(data = transform_coord(dt), aes(x = lon, y = lat), color = "red", fill = NA) # Plot a polygon
 
 # You need to transform your data with transform_coord() but I will explain this on Monday!
