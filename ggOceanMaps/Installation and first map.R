@@ -16,7 +16,7 @@ devtools::install_github("MikkoVihtakari/ggOceanMaps")
 
 #### Plotting a first map ####
 #
-# open the package
+# Open the package
 #
 library(ggOceanMaps)
 
