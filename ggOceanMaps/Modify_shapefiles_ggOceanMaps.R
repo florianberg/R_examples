@@ -1,31 +1,42 @@
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-setwd('..')
-setwd('..')
 
 library(ggOceanMaps)
 
-NEDPath <- paste0(getwd(),"/ggOceanMaps") # Natural Earth Data location
-outPath <- paste0(getwd(),"/land") # Data output location
 
-lims <- c(-6, 13, 50, 64)
-projection <- "EPSG:3995"
+#### Customize land shapefiles ####
+
+NEDPath <- paste0(getwd(),"/Shapefiles") # Locate folder with shapefiles
+lims <- c(-6, 13, 50, 64) # Define limits for the map
+projection <- "EPSG:3995" # Define a projection
+
 
 #
-# Norway shapefile
+# Norway land shapefile
 #
 
 # Downloaded at: https://www.diva-gis.org/gdata
 
-world <- rgdal::readOGR(paste(NEDPath, "NOR_adm/NOR_adm1.shp", sep = "/"))
+#
+# Prepare the data
+#
+world <- rgdal::readOGR(paste(NEDPath, "NOR_adm/NOR_adm1.shp", sep = "/")) # Read in shapefile
 
-bs_land <- clip_shapefile(world, lims)
-bs_land <- sp::spTransform(bs_land, CRSobj = sp::CRS(projection))
-rgeos::gIsValid(bs_land) # Has to return TRUE, if not use rgeos::gBuffer
+bs_land <- clip_shapefile(world, lims) # Limit shapefile to needed region
+bs_land <- sp::spTransform(bs_land, CRSobj = sp::CRS(projection)) # Transform shapefile to projection
+rgeos::gIsValid(bs_land) # Has to return TRUE, if not use rgeos::gBuffer see below
 #bs_land <- rgeos::gBuffer(bs_land, byid = TRUE, width = 0)
-sp::plot(bs_land)
+sp::plot(bs_land) # Plots the customized shapefile
+
+#
+# Plot the map with basemap()
+#
+
+# You now need to define which shapefile should be used
+# by shapefiles = list(land = XXX, glacier = XXX, bathy = XXX
+# Where you replace the XXX by the customized shapefiles
 
 basemap(shapefiles = list(land = bs_land, 
-                          glacier=ggOceanMapsData::arctic_glacier,
+                          glacier = ggOceanMapsData::arctic_glacier,
                           bathy = ggOceanMapsData::arctic_bathy),
         limits = c(4.8, 5.8, 60.5, 61),
         bathymetry = TRUE)
@@ -41,25 +52,25 @@ world <- rgdal::readOGR(paste(NEDPath, "ices_areas/ices_areas.shp", sep = "/"))
 bs_land <- clip_shapefile(world, lims)
 bs_land <- sp::spTransform(bs_land, CRSobj = sp::CRS(projection))
 rgeos::gIsValid(bs_land) # Has to return TRUE, if not use rgeos::gBuffer
-bs_land <- rgeos::gBuffer(bs_land, byid = TRUE, width = 0)
+#bs_land <- rgeos::gBuffer(bs_land, byid = TRUE, width = 0)
 sp::plot(bs_land)
 
 basemap(shapefiles = list(land = bs_land, 
-                          glacier=ggOceanMapsData::arctic_glacier,
+                          glacier = ggOceanMapsData::arctic_glacier,
                           bathy = ggOceanMapsData::arctic_bathy),
         limits = c(4.8, 5.8, 60.5, 61),
         bathymetry = TRUE,
-        land.col = NA)
+        land.col = NA) # Set land.col = NA becuase the polygons are swaped 
 
 
 #
-# Vestland FGDB map
+# Vestland land FGDB map
 #
 
 # Downloaded at: https://www.kartverket.no/api-og-data/kartgrunnlag-fastlands-norge
 
-rgdal::ogrListLayers("Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb")
-world <- rgdal::readOGR("Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb",
+rgdal::ogrListLayers("Shapefiles/Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb")
+world <- rgdal::readOGR("Shapefiles/Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb",
                         "N250_Høyde_omrade")
 
 bs_land <- clip_shapefile(world, lims)
@@ -69,22 +80,32 @@ rgeos::gIsValid(bs_land) # Has to return TRUE, if not use rgeos::gBuffer
 sp::plot(bs_land)
 
 basemap(shapefiles = list(land = bs_land, 
-                          glacier=ggOceanMapsData::arctic_glacier,
+                          glacier = ggOceanMapsData::arctic_glacier,
                           bathy = ggOceanMapsData::arctic_bathy),
         limits = c(4.8, 5.8, 60.5, 61),
         bathymetry = TRUE)
 
-## Change bathymetry data (Not relevant since we can load the data)
+# It is recommended to save the customized land shapefiles
+# so that you do not need to re-run and prepare it everytime
 
-#etopoPath <- "C:/Users/floriane/OneDrive - Havforskningsinstituttet/Studium/R-Scripts/Maps/" 
-#lims <- c(-6, 13, 50, 64)
-#projection <- "+init=epsg:3995"
-#basemap(limits = lims)
-#rb <- raster_bathymetry(bathy = paste(etopoPath, "ETOPO1_Ice_g_gmt4.grd", sep = "/"),
-#                        depths = c(100,200),
-#                        proj.out = projection,
-#                        boundary = lims)
-#bs_bathy <- vector_bathymetry(rb)
-#save(bs_bathy, file="Data/Map_data.Rdata")
+save(bs_land, file = "Shapefiles/New_land_shapefile.Rdata")
 
-load("Data/Map_data.Rdata")
+
+#### Customize bathymetry files ####
+
+etopoPath <- "C:/Users/floriane/OneDrive - Havforskningsinstituttet/Studium/R-Scripts/Maps/" 
+
+rb <- raster_bathymetry(bathy = paste(etopoPath, "ETOPO1_Ice_g_gmt4.grd", sep = "/"),
+                        depths = c(100,200),
+                        proj.out = projection,
+                        boundary = lims)
+bs_bathy <- vector_bathymetry(rb)
+
+#save(bs_bathy, file="Shapefiles/New_bathymetry_shapefile.Rdata")
+
+basemap(shapefiles = list(land = ggOceanMapsData::arctic_land, 
+                          glacier = ggOceanMapsData::arctic_glacier,
+                          bathy = bs_bathy),
+        limits = c(-4, 13, 49, 64),
+        bathymetry = TRUE)
+
