@@ -13,6 +13,9 @@ projection <- "EPSG:3995"
 #
 # Norway shapefile
 #
+
+# Downloaded at: https://www.diva-gis.org/gdata
+
 world <- rgdal::readOGR(paste(NEDPath, "NOR_adm/NOR_adm1.shp", sep = "/"))
 
 bs_land <- clip_shapefile(world, lims)
@@ -30,6 +33,9 @@ basemap(shapefiles = list(land = bs_land,
 #
 # ICES shapefile
 #
+
+# Downloaded at: https://gis.ices.dk/shapefiles/ICES_areas.zip
+
 world <- rgdal::readOGR(paste(NEDPath, "ices_areas/ices_areas.shp", sep = "/"))
 
 bs_land <- clip_shapefile(world, lims)
@@ -43,22 +49,30 @@ basemap(shapefiles = list(land = bs_land,
                           bathy = ggOceanMapsData::arctic_bathy),
         limits = c(4.8, 5.8, 60.5, 61),
         bathymetry = TRUE,
-        land.col = NA,
-        fill = 'grey')
+        land.col = NA)
 
 
-basemap(limits = c(4, 20, 57, 73), 
-        bathymetry = TRUE, 
-        bathy.style = "poly_greys",
-        glaciers = TRUE, 
-        gla.col = "cadetblue", # Change color of glaciers
-        gla.border.col = NA, # Change color of border lines ('NA' remove lines)
-        land.col = "#eeeac4", # Change color of land
-        land.border.col = NA, # Change color of border lines
-        #grid.col = NA, # Remove grid lines
-        grid.size = 0.05)
+#
+# Vestland FGDB map
+#
 
+# Downloaded at: https://www.kartverket.no/api-og-data/kartgrunnlag-fastlands-norge
 
+rgdal::ogrListLayers("Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb")
+world <- rgdal::readOGR("Basisdata_46_Vestland_25832_N250Kartdata_FGDB.gdb",
+                        "N250_Høyde_omrade")
+
+bs_land <- clip_shapefile(world, lims)
+bs_land <- sp::spTransform(bs_land, CRSobj = sp::CRS(projection))
+rgeos::gIsValid(bs_land) # Has to return TRUE, if not use rgeos::gBuffer
+#bs_land <- rgeos::gBuffer(bs_land, byid = TRUE, width = 0)
+sp::plot(bs_land)
+
+basemap(shapefiles = list(land = bs_land, 
+                          glacier=ggOceanMapsData::arctic_glacier,
+                          bathy = ggOceanMapsData::arctic_bathy),
+        limits = c(4.8, 5.8, 60.5, 61),
+        bathymetry = TRUE)
 
 ## Change bathymetry data (Not relevant since we can load the data)
 
