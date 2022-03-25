@@ -102,7 +102,7 @@ save(bs_land, file = "Shapefiles/New_land_shapefile.Rdata")
 # Downloaded at: https://download.gebco.net/ in "2D netCDF" format
 
 rb <- raster_bathymetry(bathy = paste(NEDPath, "GEBCO/gebco_2021.nc", sep = "/"),
-                        depths = c(100,200),
+                        depths = c(50,100,200,500,1000,2000), # Define depth contours 
                         proj.out = projection,
                         boundary = lims)
 bs_bathy <- vector_bathymetry(rb)
