@@ -2,13 +2,15 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 library(ggOceanMaps)
 
-
-#### Customize land shapefiles ####
-
+#
+# Define parameters
+#
 NEDPath <- paste0(getwd(),"/Shapefiles") # Locate folder with shapefiles
 lims <- c(-6, 13, 50, 64) # Define limits for the map
 projection <- "EPSG:3995" # Define a projection
 
+
+#### Customize land shapefiles ####
 
 #
 # Norway land shapefile
@@ -93,15 +95,20 @@ save(bs_land, file = "Shapefiles/New_land_shapefile.Rdata")
 
 #### Customize bathymetry files ####
 
-etopoPath <- "C:/Users/floriane/OneDrive - Havforskningsinstituttet/Studium/R-Scripts/Maps/" 
+#
+# GEBCO bathymetry grid
+#
 
-rb <- raster_bathymetry(bathy = paste(etopoPath, "ETOPO1_Ice_g_gmt4.grd", sep = "/"),
+# Downloaded at: https://download.gebco.net/ in "2D netCDF" format
+
+rb <- raster_bathymetry(bathy = paste(NEDPath, "GEBCO/gebco_2021.nc", sep = "/"),
                         depths = c(100,200),
                         proj.out = projection,
                         boundary = lims)
 bs_bathy <- vector_bathymetry(rb)
 
-#save(bs_bathy, file="Shapefiles/New_bathymetry_shapefile.Rdata")
+save(bs_bathy, file = "Shapefiles/New_bathymetry_shapefile.Rdata")
+
 
 basemap(shapefiles = list(land = ggOceanMapsData::arctic_land, 
                           glacier = ggOceanMapsData::arctic_glacier,
@@ -109,3 +116,8 @@ basemap(shapefiles = list(land = ggOceanMapsData::arctic_land,
         limits = c(-4, 13, 49, 64),
         bathymetry = TRUE)
 
+basemap(shapefiles = list(land = bs_land, 
+                          glacier = ggOceanMapsData::arctic_glacier,
+                          bathy = bs_bathy),
+        limits = c(4.8, 5.8, 60.5, 61),
+        bathymetry = TRUE)
